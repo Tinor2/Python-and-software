@@ -1,0 +1,183 @@
+# To do list 
+import os
+FOLDER_NAME = "To do lists Folder"
+def italicize(text: str) -> str:
+    return f"\033[3m{text}\033[0m"
+def newFile(path = None):
+    if path == None:
+        path = os.path.dirname(__file__)
+    newFolderName = FOLDER_NAME
+    path += f"/{newFolderName}"
+    try:
+        os.makedirs(path)
+        print(f"To Do list folder does not exist.\n     New folder being created at: {path}")
+        print(f"    Entry added: {italicize(path)}")
+    except FileExistsError:
+        if input("Would you like to create a new file in this folder? (y/n): ").lower() != "y":
+            print("    Quitting program")
+            return "Error 3 - User cancelled"
+        else:
+            pass
+    except Exception as e: 
+        return "Error 2 - Misc error"
+    title = input("What would you like to name the new file? ")
+    if title == "":
+        title = "Untitled To do list"
+    items = os.listdir(path)
+    files = [item for item in items if os.path.isfile(os.path.join(path, item))]
+    name = f"{title}.txt"
+    i = 1
+    while True:    
+        if name in files:
+            name = f"{title} {i}.txt" # remove the initial title, insert new title with a number
+            i += 1
+        else:
+            break
+    path = path + f"/{name}"
+    i = 0  
+    try:
+        with open(path, "w") as file:
+            file.write("To do list\n")
+            print(f"    New To do List added: {italicize(path)}")
+    except Exception as e:
+        return "Error 2 - Misc error"
+def getFileInfo():
+    while True:    
+        task = input("New entry, edit existing entry, or mark entry as complete? (new/edit/complete): ")
+        if task in ["new", "edit", "complete"]:
+            break
+        elif task == "q":
+            print("Quitting program")
+            return "q", "q"
+        else:
+            print("Invalid input")
+
+    ToDoListsPath = os.path.dirname(__file__) + f"/{FOLDER_NAME}"
+    print(ToDoListsPath)
+    if not os.path.exists(ToDoListsPath):
+        print("No to do lists found. Try setting up a new file first")
+        return "q", "q"
+    items = os.listdir(ToDoListsPath)
+    files = [item for item in items if os.path.isfile(os.path.join(ToDoListsPath, item))]
+    if files == []:
+        print("No to do lists found. Try setting up a new file first")
+        return "q", "q"
+    while True: # Get the file to be editied, avoid errors
+        ToDoList = input("Which to do list would you like to edit? (type the name of the file): ")
+        if ToDoList.isdigit(): #Allows user to enter the index of the file
+            if int(ToDoList) < len(files):
+                ToDoList = files[int(ToDoList)]
+                break
+            else:
+                print("File not found, please try again")
+        elif ToDoList[len(ToDoList)-4:] != ".txt":
+            ToDoList += ".txt"
+        print(ToDoList)
+
+        if ToDoList == "q":
+            print("Quitting program")
+            return "q", "q"
+        elif ToDoList not in files:
+            print("File not found, please try again")
+        else:
+            ToDoList += ".txt"
+            break
+    return ToDoListsPath + f"/{ToDoList}", task
+def newEntry(path):
+    with open(path, "a") as file:
+        while True:
+            entry = input("Enter a new entry: ")
+            if entry == "q":
+                break
+            file.write(f"{entry}\n")
+            print(f"    Entry added: {italicize(entry)}")
+            if input("Add another entry? (y/n): ").lower() != "y":
+                break
+def editEntry(path):
+    with open(path, "r") as file:
+        entries = file.readlines()
+        # Remove \n from each entry if it ends with it
+        entries = [entry.rstrip('\n') for entry in entries]
+    while True:
+        while True:    
+            lineToEdit = input("Which entry would you like to edit? (type the number of the entry): ")
+            if lineToEdit.isdigit():
+                lineToEdit = int(lineToEdit)
+                if lineToEdit < len(entries):
+                    break
+                else:
+                    print("Entry not found, please try again")
+            elif lineToEdit in entries:
+                lineToEdit = entries.index(lineToEdit)
+                break
+            elif lineToEdit == "q":
+                print("Quitting program")
+                return "q"
+            else:
+                print("Invalid input, please try again")
+        print(f"    Editing entry: {italicize(entries[lineToEdit])}") 
+        newEntry = input("What would you like to change this entry to? ")
+        print(f"    Entry changed to: {italicize(newEntry)}")
+        entries[lineToEdit] = newEntry
+        if input("Edit another entry? (y/n): ").lower() != "y":
+            break
+    with open(path, "w") as file:
+        for entry in entries:
+            file.write(f"{entry}\n")
+    return entries
+def completeEntry(path, remove = None):
+    if remove == None:
+        remove = False
+    with open(path, "r") as file:
+        entries = file.readlines()
+        # Remove \n from each entry if it ends with it
+        entries = [entry.rstrip('\n') for entry in entries]
+    while True:
+        while True:    
+            lineToEdit = input("Which entry would you like to edit? (type the number of the entry): ")
+            if lineToEdit.isdigit():
+                lineToEdit = int(lineToEdit)
+                if lineToEdit < len(entries):
+                    break
+                else:
+                    print("Entry not found, please try again")
+            elif lineToEdit in entries:
+                lineToEdit = entries.index(lineToEdit)
+                break
+            elif lineToEdit == "q":
+                print("Quitting program")
+                return "q"
+            else:
+                print("Invalid input, please try again")
+        print(f"    Editing entry: {italicize(entries[lineToEdit])}") 
+        confirmation = input("Are you sure you've completed this entry? (y/n): ")
+        if confirmation.lower() == "y":
+            entries.pop(lineToEdit)
+            print(f"    Entry completed!: {italicize(entries[lineToEdit])}")
+        else:
+            print("Entry not completed")
+            break
+
+
+while True:
+    whichFunction = input("Create a new file, or edit an existing file? (new/edit): ")
+    if whichFunction in ["new", "edit"]:
+        break
+    else:
+        print("Invalid input")
+if whichFunction == "new":
+    newFile()
+elif whichFunction == "edit":
+    result = getFileInfo()
+    if result == None or result == ("q","q"):
+        print("Exiting program.")
+        exit()
+    targetFilePath, task = result
+    if task == "new":
+        newEntry(targetFilePath)
+    elif task == "edit":
+        editEntry(targetFilePath)
+    elif task == "complete":
+        completeEntry(targetFilePath)
+    else:
+        print("Error 3 - Misc error")

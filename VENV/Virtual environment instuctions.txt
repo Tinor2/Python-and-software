@@ -1,0 +1,18 @@
+VIRTUAL ENIVRONMENT or VENV
+WHAT IS THIS USED FOR 
+    The virtual environment lets you install python modules 
+CREATING A NEW VENV IN PYTHON3
+    IN COMMAND LINE:
+    >   python3.9 -m venv ENVIRONMENT_NAME
+    This will create a new folder with various files to use a virtual environment with
+ATIVATING A VENV
+    IN COMMAND LINE:
+    >   source ENVIRONMENT_NAME/bin/activate
+    Or whatever path the venv folder is in
+    This runs a script in the virtual environment's folders that will start up the environment
+    >   source VENV/bin/activate
+DEACTIVATING A VENV
+    IN COMMADN LINE
+    >   deactivate
+    This will simply exit the venv
+

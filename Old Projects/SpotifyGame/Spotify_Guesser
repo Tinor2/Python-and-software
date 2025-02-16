@@ -1,0 +1,129 @@
+import csv
+import os
+import sys
+import random
+def colors(text:str = "", color = "plain"): # Allow for changing the colors of a text. Takes an input of a certain string, and then a color. The default color is plain
+    color = color.lower()
+    startingEscape = "\033[" # Uses tags that indicate different colors to change the color
+    endingEscape = "\033[0m"
+    options = {"plain":"37m", # Linking different colors with their corrosponding tags
+               "red":"31m", 
+               "green":"32m",
+               "yellow":"33m",
+               "blue":"34m",
+               "magenta":"35m", 
+               "cyan":"36m"}
+    if color in options:    
+        colorToken = options[color] # find the tag based on the input 
+    else: 
+        colorToken = options["plain"] # If there is any misspellings, it will just show it to be plain
+    text = startingEscape + colorToken + text + endingEscape # add in the tags
+    return text
+class exception(Exception): pass
+class kill(Exception): pass
+def csv_to_dict(filename):
+  with open(filename, 'r') as csvfile:
+    reader = csv.reader(csvfile)
+    data = {}
+    for row in reader:
+      key, value = row
+      key = key.lower()
+      data[key] = value
+    return data
+# os.system('cls' if os.name == 'nt' else 'clear') 
+# Example usage:
+filename = "Artistrankings.csv"
+data_dict = csv_to_dict(filename)
+clearConditions = ["cls", "clear"]
+while True:
+    try:    
+        playerCount = input("How many players are there? ")
+        if playerCount in clearConditions:
+           raise kill()
+        playerCount = int(playerCount)
+        if playerCount >= 10:
+           raise exception()
+    except ValueError:
+       print("Invalid player count, try again")
+    except exception:
+       print("Too high of a player count, try again")
+    except kill:
+        sys.exit("ENDING PROGRAM...") 
+    else:
+       break
+while True:
+    while True:  
+        leave = False  
+        target = input("What artist are we guessing for? ")
+        target = target.lower()
+        if target in clearConditions:
+            sys.exit("ENDING PROGRAM...") 
+        elif target == "drake":
+            break
+        elif target == "random":
+            while True:
+                target = random.choice(list(data_dict.keys()))
+                print("The random artist is: ",target)
+                c = input("Are you locking in this artist? ")
+                if c.lower() in ["n","no","2","f","false"]:
+                    pass
+                elif c.lower() in clearConditions:
+                    sys.exit("ENDING PROGRAM...")
+                else:
+                    leave = True 
+                    break
+            break
+                
+            
+        elif target not in data_dict:
+            print("That artist is not in the top 600, try another")
+        else:
+            break
+    guesses = []
+    while True:
+        for i in range(playerCount):
+            os.system('cls' if os.name == 'nt' else 'clear') 
+            print(colors("PLAYER "+str(i+1),"cyan"))
+            while True:
+                try:
+                    print(colors("What rank do you think "+ target+ " is?", "magenta"),end='', flush=True)    
+                    playerGuess = input(" ")
+                    if playerGuess in clearConditions:
+                        raise kill()
+                    playerGuess = int(playerGuess)
+                except ValueError:
+                    print("Invalid guess, try again")
+                except kill:
+                    sys.exit("ENDING PROGRAM...") 
+                else:
+                    guesses.append(playerGuess)
+                    break
+        break
+    i=0
+    perfectGuess = int(data_dict[target]) 
+    calculatedGuesses = []
+    for guess in guesses:
+        calculatedGuesses.append(abs(perfectGuess - guess))
+        i += 1
+    firstGuess = {0:calculatedGuesses[0]}
+    i = 0
+    for guess in calculatedGuesses:
+        if guess < firstGuess[0]:
+            firstGuess = {i:guess}
+        elif guess == firstGuess:
+            firstGuess[i] = guess
+        i += 1
+    for key in list(firstGuess.keys()):
+        new_key = key + 1
+        firstGuess[new_key] = firstGuess.pop(key)
+    
+    for guess in list(firstGuess.keys()):        
+        print(colors("PLAYER "+ str(guess)+" won, and got a score of\
+ "+str(firstGuess[guess]) +", with an original guess of "+str(guesses[guess-1]) + ", from a target of "+str(perfectGuess), "green"))
+    c = input("NEW GAME? ")
+    if c.lower() in ["n","no","2","f","false"]:
+        break
+    else:
+        pass 
+
+

@@ -1,0 +1,92 @@
+import random
+def defineDifficulty(input):
+    input = input.lower()
+    if input in ["hard","h"] :
+        return "5"
+    elif input in ["medium","m"]:
+        return "10"
+    elif input in ["easy","e"]:
+        return "20"
+    elif input in ["child", "c"]:
+        return "100"
+    else:
+        return "Error"
+retry = ""
+while True:
+    if retry == "n": break
+    cheats = False
+    while True:
+        difficulty = input("What difficulty? (HARD, MEDIUM, EASY) ")
+        if difficulty == "CHEATS":
+            cheats = True
+            continue
+        turns = defineDifficulty(difficulty)
+        if turns != "Error":
+            turns = int(turns)
+            break
+
+    length = int(input("How long is each guess? (lenght of the target) "))
+    target = []
+    guess = []
+    for i in range(length):
+        if i != 0: 
+            target.append(random.randint(0,9))
+        else:
+            target.append(random.randint(1,9))
+    if cheats: print(target)
+    sheep = 0
+    goat = 0
+    turnsTaken = 0
+    while sheep != length and turnsTaken != turns:
+        sheep = 0
+        goat = 0
+        guessStr =  input("Whats your guess? ")
+        if guessStr == "QUIT":
+            break
+        guess = []
+        for char in guessStr:
+            guess.append(int(char))
+        if cheats: print(guess)
+        guessIndex = -1
+        for guessDig in guess:
+            guessIndex += 1
+            targetIndex = -1
+            if cheats: print("GuessDIG: "+str(guessDig))
+            goatFound = False
+            for targetDig in target:
+                targetIndex += 1
+                if cheats: print("     TargetDIG: "+str(targetDig))
+                if guessDig == targetDig:
+                    goatFound = True
+                    if cheats: print("          Match! ("+str(goatFound)+")")
+                    if guessIndex == targetIndex:
+                        goatFound = False
+                        sheep += 1
+                        if cheats: print("          SHEEP FOUND")
+                        break
+            if goatFound:
+                goat += 1
+                if cheats: print("          GOAT FOUND")   
+            targetIndex = -1
+        turnsTaken += 1
+        print("Turns left: "+ str(turns-turnsTaken))
+        print(str(sheep)+" sheeps, and " + str(goat)+" goats")
+    if sheep == length:
+        print("Nice guess! You took "+str(turnsTaken)+ " turns!")
+    if turnsTaken == turns:
+        if turns in [8,100]:
+            print("you were on the easiest difficulty how 😭")
+        else:
+            finalAwnserDisplay = ""
+            for digit in target:
+                digit = str(digit)
+                finalAwnserDisplay = str(finalAwnserDisplay)
+                finalAwnserDisplay = finalAwnserDisplay + digit
+            print("the awnser was "+ finalAwnserDisplay)
+    while True:    
+        retry = input("Would you like another round? ")
+        retry = retry.lower()
+        if retry in ["y","n"]:
+            break
+
+

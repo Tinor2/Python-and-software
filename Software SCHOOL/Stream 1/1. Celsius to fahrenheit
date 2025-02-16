@@ -1,0 +1,8 @@
+conversion = lambda celsius : (celsius * 9/5)+32 
+while True:
+    try:
+        faren = float(input("Degree Celsius: "))
+        print(f"Fahrenheit: {conversion(faren)}")
+        break
+    except ValueError:
+        print("Invalid Input, reattempt ")

@@ -1,0 +1,21 @@
+from os import path
+with open(path.dirname(__file__)+"/PTstory", "r") as text: # Open the file in read mode, store it as variable text
+    story = text.read()
+
+words = set()
+startIndex = -1
+for index, char in enumerate(story): # For each character in the story, store the index and the character
+    if char == "<": # If the character is an underscore
+        startIndex = index 
+    if char == ">" and startIndex != -1: # If the character is an underscore
+        endIndex = index
+        word = story[startIndex:endIndex+1]
+        words.add(word) # Append the word to the list of words
+        startIndex = -1
+awnswers = {}
+for word in words:
+    awnswers[word] = input(f"Enter a word for a {word[1:len(word)-1]}: ")
+
+for word in awnswers:
+    story = story.replace(word, awnswers[word])
+print(story)

@@ -1,0 +1,80 @@
+#https://math.stackexchange.com/questions/556341/rgb-to-hsv-color-conversion-algorithm
+'''HSV stands for   HUE:            Type of color (e.g. red, blue,green etc) and is expressed in degrees (0-360)
+                    SATURATION:     Intensity of color
+                    VALUE:          Darkness of color'''
+from math import floor
+def convertRGB(red:int,green:int,blue:int):
+    h = 0 # default values
+    s = 0
+    v = 0
+    c = [red,green,blue]
+    i = -1 #counter
+    for color in c:
+        i += 1
+        color /= 256
+    maxColor = max(c)
+    minColor = min(c)
+    i = -1
+    maxFound = False
+    minFound = False
+    for color in c:
+        
+        i += 1
+        if maxColor == color and maxFound is False:
+            print("Max Color: " + str(maxColor) + "  Match: "+str(color) + " Index: " + str(i))
+            maxColor = i
+            maxFound = True
+        if minColor == color and minFound is False:
+            print("Min Color: " + str(minColor) + "  Match: "+str(color) + " Index: " + str(i))
+            minColor = i
+            minFound = True
+    rangeOfColors = abs(c[maxColor] - c[minColor])
+    # Calculating value
+    v = c[maxColor]/255 * 100
+    # Calculating hue 
+    if rangeOfColors != 1999999:
+        if maxColor == 0: # If highest color is red
+            h =(c[1]-c[2])/rangeOfColors
+        elif maxColor == 1: # If highest color is blue
+            h = ((c[2]-c[0])/rangeOfColors)+2
+        elif maxColor == 2: # If highest color is green
+            h =(c[0]-c[1])/rangeOfColors+4
+        h *= 60
+    else: return "error"
+    # Calculating saturation
+    if c[maxColor] == 0:# if the maximum color is 0 then the saturation is zero
+        h = 0
+        s = 0
+        return [h,s,v]
+    else:
+        s = rangeOfColors/c[maxColor] *100
+        return [h,s,v]
+def convertHSV(hue:float,sat:int,val:int , hscale = 6 ,sscale=1, vscale=1):
+    hue /= hscale
+    hue %= 6
+    if hue < 0:
+        hue += 6
+    s = 0
+    v = 0
+    s /= sscale
+    v /= vscale
+    a = val * (1-sat)
+    b = val * (1 - (hue - floor(hue))*sat) 
+    c = val * (1 -(1- (hue - floor(hue)))*sat)
+    print(str(a)+str(b)+str(c))
+    if 0 <= hue < 1:
+        return [val,c,a]
+    elif 1 <= hue < 2:
+        return [b,val,a]
+    elif 2 <= hue < 3:
+        return [a,val,c]
+    elif 3 <= hue < 4:
+        return [a,b,val]
+    elif 4 <= hue < 5:
+        return [c,a,val]
+    elif 5 <= hue < 6:
+        return [val,a,b]
+
+
+      
+print(convertHSV(100,1,1 ))

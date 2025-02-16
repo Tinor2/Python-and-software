@@ -1,0 +1,49 @@
+import random
+def roll():
+    return random.choice(range(1,6))
+while True:
+    players = input("Enter the number of players: ")
+    if players.isdigit():
+        players = int(players)
+        if 4 >= players > 0:
+            break
+        else:
+            print("Please enter a valid amount of players")
+    else:
+        print("Please enter a valid number")
+winningScore = 10
+playerScores = [0 for i in range(players)] # ==> [0]*players
+
+currentPlayer = 0
+canEnd = False
+while max(playerScores) < winningScore and not canEnd:
+    currentScore = 0
+    print(f"PLAYER SCORES: {playerScores} \n    CURRENT PLAYER: {currentPlayer + 1}")
+    print("New Turn")
+    while True:
+        isRoll = input("Would you like to continue rolling? (y/n) ").lower()
+        if isRoll  != "y":
+            playerScores[currentPlayer%players] += currentScore
+            currentPlayer += 1
+            if currentPlayer == players:
+                currentPlayer = 0
+                if max(playerScores) >= winningScore:
+                    canEnd = True  # If we are on the last turn and the max score is greater than or equal to the winning score, the game can end
+            break
+        value = roll()
+        if value == 1:
+            print("Round over! You rolled a 1. No points added to your score. ")
+            playerScores[currentPlayer%players] += 0
+            currentPlayer += 1
+            if currentPlayer == players:
+                currentPlayer = 0
+                if max(playerScores) >= winningScore:
+                    canEnd = True  # If we are on the last turn and the max score is greater than or equal to the winning score, the game can end
+            break
+        else:
+            print(f"Your roll was: {value}")
+            currentScore += value
+            continue
+print(f"Player {playerScores.index(max(playerScores))+1} won the match, with a grand total of \n    {max(playerScores)} POINTS!")
+
+
