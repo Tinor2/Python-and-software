@@ -1,0 +1,15 @@
+count = 0
+Sum = 0
+while True:
+    if count >= 5:
+        break
+    while True:
+        try:
+            num = float(input("Input a number to average: "))
+            break
+        except ValueError:
+            print("You did not type in a number. Try again")
+    count += 1
+    Sum += num
+
+print(f"The average of your numbers is: {Sum/count}")
