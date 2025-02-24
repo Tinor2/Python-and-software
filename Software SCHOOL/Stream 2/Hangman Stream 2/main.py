@@ -6,7 +6,6 @@ class Hangman:
         self.lives = totalLives
         self.progress = 0
     def checkForEnd(self):
-        print(f"word: {sorted(set(self.word))}, guesses used: {sorted(self.guesses)}")
         if self.lives <= 0:
             return True, "L" #loss
         elif  set(sorted(self.word)) <= set(sorted(self.guesses)): #note: Not scalable
@@ -33,6 +32,7 @@ class Hangman:
                 self.lives -= 1
                 print(f"Total lives left: {self.lives}")
                 return "Wrong choice, loose a life" 
+        self.guesses.add(guess) 
         return "Correct Choice!" #Before the next guess is called, checkForEnd() should be called again, and we should check if the game should end or not
     def renderWord(self):
         display = ""
@@ -41,9 +41,11 @@ class Hangman:
                 display += f" {char} "
             else:
                 display += " _ "
+        display += "\n"
+        display += f"guesses used: {sorted(self.guesses)}"
         return display
 
-currentGame = Hangman("car", 5)
+currentGame = Hangman("car", 10)
 while True:
     print(currentGame.processGuess(input("guess: ")))
     isEnd = currentGame.checkForEnd()
