@@ -1,13 +1,15 @@
+import json
 import utils
+import random
 class Hangman:
-    def __init__(self, word:str, totalLives) -> None:
+    def __init__(self, word:str, totalPoints) -> None:
         self.word = word
         self.guesses = set()
-        self.lives = totalLives
+        self.points = totalPoints
         self.progress = 0
     def checkForEnd(self):
         print(f"word: {sorted(set(self.word))}, guesses used: {sorted(self.guesses)}")
-        if self.lives <= 0:
+        if self.points <= 0:
             return True, "L" #loss
         elif  set(sorted(self.word)) <= set(sorted(self.guesses)): #note: Not scalable
             return True,"W"
@@ -17,23 +19,27 @@ class Hangman:
         if len(guess) == 1:
             if guess in self.guesses: # is a in {...}
                 self.guesses.add(guess) 
-                self.lives -= 1
-                print(f"Total lives left: {self.lives}")
+                self.points -= 10
+                print(f"Total lives left: {self.points}")
                 return "Already used letter, loose a life"
             elif guess not in self.word:
                 self.guesses.add(guess) 
-                self.lives -= 1
-                print(f"Total lives left: {self.lives}")
+                self.points -= 10
+                print(f"Total lives left: {self.points}")
                 return "Wrong choice, loose a life"    
+            else:
+                self.guesses.add(guess)
+                self.points += 10
+                return "Correct Choice!"
         else:
             if self.word == guess:
                 for letter in guess: self.guesses.add(letter)
+                self.points += 10
                 return "Correct, Win condition"
             else:
-                self.lives -= 1
-                print(f"Total lives left: {self.lives}")
+                self.points -= 10
+                print(f"Total lives left: {self.points}")
                 return "Wrong choice, loose a life" 
-        return "Correct Choice!" #Before the next guess is called, checkForEnd() should be called again, and we should check if the game should end or not
     def renderWord(self):
         display = ""
         for char in self.word: # could be simplified to collection
@@ -43,11 +49,41 @@ class Hangman:
                 display += " _ "
         return display
 
-currentGame = Hangman("car", 5)
+def load_game_data():
+    with open('/Users/ronitbhandari/Desktop/Projects/Software SCHOOL/Stream 2/Hangman Stream 2/data.json', 'r') as file:
+        game_data = json.load(file)
+    words = game_data['words']
+    difficulties = game_data['difficulties']
+    return (words, difficulties)
+
+def chooseDif():
+    allWords, difficultyOptions= load_game_data()
+    options = []
+    for difficulty in difficultyOptions.values():
+        options.extend(difficulty["shortcuts"])
+    while True:
+        userChoice = input("Choose a difficulty: ").lower()
+        if userChoice in options:
+            print("fds")
+            if userChoice in difficultyOptions["easy"]["shortcuts"]:
+                finalDifficulty = "easy"
+            elif userChoice in difficultyOptions["medium"]["shortcuts"]:
+                finalDifficulty = "medium"
+            elif userChoice in difficultyOptions["hard"]["shortcuts"]:
+                finalDifficulty = "hard"
+            else:
+                print("Invalid Difficulty, try again. ")
+                continue
+            break
+        else:
+            print("Invalid Difficulty, try again. ")
+    return (random.choice(allWords[finalDifficulty]), difficultyOptions[finalDifficulty]["points"])
+
+word, maxPoints = chooseDif()
+currentGame = Hangman(word, maxPoints)
 while True:
     print(currentGame.processGuess(input("guess: ")))
     isEnd = currentGame.checkForEnd()
-    print(isEnd)
     if isEnd[0] == True:
         if isEnd[1] == "W":
             print("You won! ")
