@@ -20,4 +20,6 @@ class Formatting():
             colorToken = options["plain"] # If there is any misspellings, it will just show it to be plain
         text = startingEscape + colorToken + text + endingEscape # add in the tags
         return text
-
+    def italicize(self, text = None) -> str:
+        return f"\033[3m{text}\033[0m"
+    
