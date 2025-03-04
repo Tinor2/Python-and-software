@@ -7,15 +7,18 @@
     "difficulties": {
         "easy": {
             "shortcuts": ["e", "easy"],
-            "points": 100
+            "points": 100,
+            "word_length": [3,4]
         },
         "medium": {
             "shortcuts": ["m", "medium"],
-            "points": 80
+            "points": 80,
+            "word_length": [5,8]
         },
         "hard": {
             "shortcuts": ["h", "hard"],
-            "points": 60
+            "points": 60,
+            "word_length": [9,12]
         }
     }
 }

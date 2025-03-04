@@ -53,7 +53,7 @@ class Hangman:
         return display
 
 def load_game_data(): #loads and acceses database
-    with open('/Users/ronitbhandari/Desktop/Projects/Software SCHOOL/Stream 2/Hangman Stream 2/data.json', 'r') as file:
+    with open('/Users/ronitbhandari/Desktop/Projects/Software SCHOOL/Stream 2/Hangman Stream 2/Word Lists/data.json', 'r') as file:
         game_data = json.load(file)
     words = game_data['words']
     difficulties = game_data['difficulties']
