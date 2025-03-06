@@ -51,9 +51,9 @@ def condense_dictionary():
     print(f"Dictionary exported to {output_path}")
 def transferData(in_path = None, out_path = None):
     if in_path == None:
-        in_path = 'Software SCHOOL/Stream 2/Hangman Stream 2/Word Lists/condensedDictionary.json'
+        in_path = 'Software SCHOOL/Stream 2/Hangman Stream 2/Word Lists/main_dict.json'
     if out_path == None:
-        out_path = '/Users/ronitbhandari/Desktop/Projects/Software SCHOOL/Stream 2/Hangman Stream 2/Word Lists/data.json'
+        out_path = 'Software SCHOOL/Stream 2/Hangman Stream 2/Word Lists/data.json'
     with open(in_path, "r") as raw_data:
         in_data = json.load(raw_data)
     with open(out_path, "r") as raw_data:
@@ -65,7 +65,7 @@ def transferData(in_path = None, out_path = None):
         word_lengths.append(sorting_info["difficulties"][key]["word_length"][1])
     is_added = False
     word_list = [word for letter in in_data.values() for word in letter.keys()]
-    for word in word_list[:100]:
+    for word in word_list:
         for index, difficulty in enumerate(word_lengths):
             if len(word)<word_lengths[index]:
                 word_lists[index].append(word)
@@ -78,7 +78,7 @@ def transferData(in_path = None, out_path = None):
     print(sorting_info["words"])
     with open(out_path, "w") as new_word_lists:
         # overwrite the data.json file to be the sorting_info variable
-        ...
+        json.dump(sorting_info, new_word_lists, indent=4)
 
 
 transferData()
