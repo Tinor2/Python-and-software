@@ -87,6 +87,7 @@ def chooseDif(): # uses loaded data
         else:
             print("Invalid Difficulty, try again. ")
     return (random.choice(allWords[finalDifficulty]), difficultyOptions[finalDifficulty]["points"])
+
 def write_new_words(new_word = None):
     if new_word == "QUIT":
         print("Exiting edit list mode ")
@@ -98,10 +99,10 @@ def write_new_words(new_word = None):
         word_file_info = json.load(word_file)
     difficulty_lengths = {}
     for difficulty in word_file_info["difficulties"].keys():
-        difficulty_lengths[difficulty] = difficulty['word_length'][1] 
+        difficulty_lengths[difficulty] = word_file_info["difficulties"][difficulty]['word_length'][1] 
 
     valid_word = False
-    if len(new_word)<word_file_info["difficulties"]['word_length']["easy"][0]: #break if the suggested word is too small
+    if len(new_word)<word_file_info["difficulties"]["easy"]['word_length'][0]: #break if the suggested word is too small for the first difficulty
         print("Enter a word with the correct length")
         return False 
     
@@ -117,6 +118,9 @@ def write_new_words(new_word = None):
         json.dump(word_file_info, overwrite_file, indent=4) #overwrite the file with the updated word list
     word_file_info = None
     return True # function is executed normally
+
+# TODO: Add a start screen
+
 while True:
     game_state = input("Start a new game, or update word list? ").lower()
     if game_state in ["start","update","s","u"]:
@@ -125,7 +129,9 @@ while True:
         elif game_state in ["update", "u"]:
             while True:
                 if write_new_words(input("Add a new word (type QUIT to exit edit mode): ")):
-                    break # if the function breaks predictably, end normally
+                    break
+
+# TODO: Add a title bar (i.e., -------HANGMAN-------- or something)
 word, maxPoints = chooseDif()
 currentGame = Hangman(word, maxPoints)
 print(currentGame.renderWord())
