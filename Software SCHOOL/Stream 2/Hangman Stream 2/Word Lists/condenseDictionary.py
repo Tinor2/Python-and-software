@@ -59,23 +59,23 @@ def transferData(in_path = None, out_path = None):
     with open(out_path, "r") as raw_data:
         sorting_info = json.load(raw_data)
     word_lengths = []
-    difficulties = list(sorting_info["words"].keys())
+    difficulties = list(sorting_info["all_words"].keys())
     word_lists = [[] for _ in range(len(difficulties))] #making things scalable if more difficulties are added
     for key in difficulties:
         word_lengths.append(sorting_info["difficulties"][key]["word_length"][1])
     is_added = False
     word_list = [word for letter in in_data.values() for word in letter.keys()]
+
     for word in word_list:
         for index, difficulty in enumerate(word_lengths):
-            if len(word)<word_lengths[index]:
+            if len(word)<word_lengths[index]: # Get the maxiumum word length for each difficulty from the data.json file
                 word_lists[index].append(word)
                 is_added = True
                 break
         if not is_added:
             word_lists[-1:].append(word) 
     for index, difficulty in enumerate(difficulties):
-        sorting_info["words"][difficulty] = word_lists[index]
-    print(sorting_info["words"])
+        sorting_info["all_words"][difficulty] = word_lists[index]
     with open(out_path, "w") as new_word_lists:
         # overwrite the data.json file to be the sorting_info variable
         json.dump(sorting_info, new_word_lists, indent=4)
