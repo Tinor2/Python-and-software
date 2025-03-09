@@ -10,7 +10,7 @@
 import string
 import json
 def load_json_data(): #loads and acceses database
-    with open('Software SCHOOL/Stream 2/Hangman Stream 2/Word Lists/RawDictionary.json', 'r') as file:
+    with open('Software SCHOOL/Stream 2/Hangman Stream 2/Word Lists/raw_dictionary.json', 'r') as file:
         game_data = json.load(file)
     return game_data
 def condense_dictionary():
@@ -53,7 +53,7 @@ def transferData(in_path = None, out_path = None):
     if in_path == None:
         in_path = 'Software SCHOOL/Stream 2/Hangman Stream 2/Word Lists/main_dict.json'
     if out_path == None:
-        out_path = 'Software SCHOOL/Stream 2/Hangman Stream 2/Word Lists/data.json'
+        out_path = 'Software SCHOOL/Stream 2/Hangman Stream 2/Word Lists/all_words_info.json'
     with open(in_path, "r") as raw_data:
         in_data = json.load(raw_data)
     with open(out_path, "r") as raw_data:
@@ -68,7 +68,7 @@ def transferData(in_path = None, out_path = None):
 
     for word in word_list:
         for index, difficulty in enumerate(word_lengths):
-            if len(word)<word_lengths[index]: # Get the maxiumum word length for each difficulty from the data.json file
+            if len(word)<word_lengths[index]: # Get the maxiumum word length for each difficulty from the all_words_info.json file
                 word_lists[index].append(word)
                 is_added = True
                 break
@@ -77,7 +77,7 @@ def transferData(in_path = None, out_path = None):
     for index, difficulty in enumerate(difficulties):
         sorting_info["all_words"][difficulty] = word_lists[index]
     with open(out_path, "w") as new_word_lists:
-        # overwrite the data.json file to be the sorting_info variable
+        # overwrite the all_words_info.json file to be the sorting_info variable
         json.dump(sorting_info, new_word_lists, indent=4)
 
 
