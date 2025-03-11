@@ -1,11 +1,14 @@
 import json
 import utils
 import random
+from os import path
 class Hangman:
-    def __init__(self, word:str, totalPoints) -> None:
+    def __init__(self, word:str, total_points, guesses = None) -> None:
+        if guesses == None:
+            guesses = set()
         self.target_word = word
-        self.used_guesses = set()
-        self.points = totalPoints
+        self.used_guesses = guesses
+        self.points = total_points
         self.formatting_tools = utils.Formatting()
     def checkForEnd(self): #uses self.word, self.guesses, self.points
         # print(f"word: {sorted(set(self.word))}, guesses used: {sorted(self.guesses)}")
@@ -58,16 +61,19 @@ class Hangman:
                 display += self.formatting_tools.colors(used_letter,"red") #sort guesses taken alpahbetically, convert into a string. Also render it in a different color
             display += " "       
         return display
-
-def load_game_data(): #loads and acceses database
-    with open('/Users/ronitbhandari/Desktop/Projects/Software SCHOOL/Stream 2/Hangman Stream 2/Word Lists/all_words_info.json', 'r') as file:
+#Software SCHOOL/Stream 2/Hangman Stream 2/all_words_info.json
+def load_game_data(filename:str,relative_path:str|None = None): #loads and acceses database
+    if relative_path == None:
+        relative_path = ""
+    target_file_path = path.join(path.dirname(__file__),relative_path,filename)
+    with open(target_file_path, 'r') as file:
         game_data = json.load(file)
-    all_words = game_data['all_words']
-    difficulties_info = game_data['difficulties']
-    return (all_words, difficulties_info)
+    return game_data
 
 def chooseDif(): # uses loaded data
-    all_words, difficulty_info= load_game_data()
+    game_data= load_game_data("all_words_info.json")
+    all_words = game_data['all_words']
+    difficulty_info = game_data['difficulties']
     options = []
     for difficulty in difficulty_info.values():
         options.extend(difficulty["shortcuts"])
@@ -87,7 +93,6 @@ def chooseDif(): # uses loaded data
         else:
             print("Invalid Difficulty, try again. ")
     return (random.choice(all_words[final_difficulty]), difficulty_info[final_difficulty]["points"])
-
 def write_new_words(new_word = None):
     if new_word == "QUIT":
         print("Exiting edit list mode ")
@@ -151,18 +156,28 @@ print(f"""
     Type 'start' or 's' to play a new game
     Type 'update' or 'u' to add new words to the list
     """)
+end_game = False
 while True:
     while True:
-        game_state = input("Start a game, or update word list? ").lower()
-        if game_state in ["start","update","s","u"]:
+        game_state = input("Start a game, update word list, or load a new save file? ").lower()
+        if game_state in ["start","update","load","s","u","l"]:
             if game_state in ['start','s']:
+                word, maxPoints = chooseDif()
+                currentGame = Hangman(word, maxPoints)
                 break
             elif game_state in ["update", "u"]:
                 while True:
                     if write_new_words(input("Add a new word (type QUIT to exit edit mode):  ")):
                         break
-    word, maxPoints = chooseDif()
-    currentGame = Hangman(word, maxPoints)
+            elif game_state in ["load","l"]:
+                print("Loading a new save file")
+        elif game_state == "quit":
+            end_game = True
+            break
+    if end_game:
+        print("Exiting program.")
+        break
+    # This point is ONLY reached if the user has chosen to start a new game, or loaded a new one
     print(currentGame.renderWord())
     while True:
         print(currentGame.processGuess(input("guess: ")))
