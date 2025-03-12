@@ -6,13 +6,16 @@ class Hangman:
     def __init__(self, word:str, total_points, guesses = None) -> None:
         if guesses == None:
             guesses = set()
+        self.user_end = False
         self.target_word = word
         self.used_guesses = guesses
         self.points = total_points
         self.formatting_tools = utils.Formatting()
     def checkForEnd(self): #uses self.word, self.guesses, self.points
         # print(f"word: {sorted(set(self.word))}, guesses used: {sorted(self.guesses)}")
-        if self.points <= 0:
+        if self.used_guesses:
+            return True, "Q"
+        elif self.points <= 0:
             return True, "L" #loss
         elif  set(sorted(self.target_word)) <= set(sorted(self.used_guesses)): #note: Not scalable
             return True,"W"
@@ -35,6 +38,10 @@ class Hangman:
                 self.points += 10
                 print(f"Total points: {self.points}")
                 return "Correct Choice, gain 10 points!"
+        elif guess == "QUIT":
+            self.user_end = True
+            return "Exiting game"
+
         else:
             if self.target_word == guess:
                 for letter in guess: self.used_guesses.add(letter)
@@ -93,8 +100,8 @@ def chooseDif(): # uses loaded data
         else:
             print("Invalid Difficulty, try again. ")
     return (random.choice(all_words[final_difficulty]), difficulty_info[final_difficulty]["points"])
-def write_new_words(new_word = None):
-    if new_word == "QUIT":
+def write_new_words(new_word:str):
+    if new_word.lower() == "quit":
         print("Exiting edit list mode ")
         return True # Function ends in a way the user intends
     if new_word == None or not new_word.isalpha(): # If the input had symbols/digits, or if it was just nothing, then break the function
@@ -129,33 +136,6 @@ def write_new_words(new_word = None):
     print(f"\'{new_word}\' has been added into the {difficulty_of_word} list!\n")
     word_file_info = None
     return True # function is executed normally
-
-# TODO:Add a start screen
-print(f"""
-    ╔═══════════════════════════════════════════════╗
-    ║                   HANGMAN                     ║
-    ╚═══════════════════════════════════════════════╝
-    
-    HOW TO PLAY:
-    • Guess letters to reveal the hidden word
-    • You can also guess the entire word at once
-    
-    SCORING SYSTEM:
-    • Correct guess: +10 points
-    • Incorrect guess: -10 points
-    • Repeated letter: -10 points
-    
-    DIFFICULTY LEVELS:
-    • Easy: Shorter words, more starting points
-    • Medium: Average length words, standard points
-    • Hard: Longer words, fewer starting points
-    
-    You win when you reveal the entire word.
-    You lose when you run out of points.
-    
-    Type 'start' or 's' to play a new game
-    Type 'update' or 'u' to add new words to the list
-    """)
 end_game = False
 while True:
     while True:
@@ -171,7 +151,7 @@ while True:
                         break
             elif game_state in ["load","l"]:
                 print("Loading a new save file")
-        elif game_state == "quit":
+        elif game_state in ["quit","q"]:
             end_game = True
             break
     if end_game:
