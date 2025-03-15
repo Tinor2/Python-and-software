@@ -13,7 +13,7 @@ class Hangman:
         self.formatting_tools = utils.Formatting()
     def checkForEnd(self): #uses self.word, self.guesses, self.points
         # print(f"word: {sorted(set(self.word))}, guesses used: {sorted(self.guesses)}")
-        if self.used_guesses:
+        if self.user_end:
             return True, "Q"
         elif self.points <= 0:
             return True, "L" #loss
@@ -69,16 +69,82 @@ class Hangman:
             display += " "       
         return display
 #Software SCHOOL/Stream 2/Hangman Stream 2/all_words_info.json
-def load_game_data(filename:str,relative_path:str|None = None): #loads and acceses database
+def use_data(filename:str,relative_path:str|None = None,state:str|None = None,data = None): #loads and acceses database
+    """
+    Loads and accesses JSON database files with specified access mode.
+    Args:
+        filename (str): Name of the file to access
+        relative_path (str, optional): Relative path to the file location. Defaults to empty string
+        state (str, optional): File access mode. Defaults to "r" (read mode)
+            Possible modes:
+            - "r": Read (default)
+            - "w": Write
+            - "a": Append
+            - "x": Create
+            - "r+": Read and write
+            - "w+": Write and read
+            - "a+": Append and read
+    Returns:
+        dict or None: Returns JSON data as dictionary if successful, None if file not found
+    Raises:
+        FileNotFoundError: If specified file cannot be found at given path
+    """
     if relative_path == None:
         relative_path = ""
+    if state == None:
+        state = "r"
     target_file_path = path.join(path.dirname(__file__),relative_path,filename)
-    with open(target_file_path, 'r') as file:
-        game_data = json.load(file)
+    try:
+        if state in ["w","a","x"]:
+            with open(target_file_path, state) as file:
+                json.dump(data, file, indent=4)
+                return 
+        else:
+            with open(target_file_path, state) as file:
+                game_data = json.load(file)
+    except FileNotFoundError:
+        print(f"File {filename} not found")
+        return None
     return game_data
 
+def load_game_state():
+    saved_data = use_data("save_file.json")
+    blank_game = False
+    
+    if saved_data:
+        # Convert guesses to a set if it exists, otherwise create empty set
+        guesses = set(saved_data["guesses"]) if saved_data.get("guesses") else set()
+        word =str(saved_data["word"])
+        points = saved_data["points"]
+
+        # Check if any essential data is missing
+        if points is '' or word is None:
+            print("save file is empty")
+            blank_game = True
+    else:
+        print("save file can not be found, creating new save file")
+        use_data("save_file.json", state="x",data = {"word": "", "points": 0, "guesses": []})
+        blank_game = True
+
+    if blank_game:
+        print("Starting new game")    
+        word, points = chooseDif()
+        guesses = set()
+    
+    return Hangman(word, int(points), guesses)
+def save_game_state(game:Hangman):
+    save_data = {
+        "word": game.target_word,
+        "points": game.points,
+        "guesses": list(game.used_guesses)
+    }
+    use_data("save_file.json", state="w", data=save_data)
+
 def chooseDif(): # uses loaded data
-    game_data= load_game_data("all_words_info.json")
+    game_data= use_data("all_words_info.json")
+    if game_data == None:
+        print("Exiting program")
+        raise SystemExit
     all_words = game_data['all_words']
     difficulty_info = game_data['difficulties']
     options = []
@@ -107,7 +173,7 @@ def write_new_words(new_word:str):
     if new_word == None or not new_word.isalpha(): # If the input had symbols/digits, or if it was just nothing, then break the function
         print("Enter a valid value")
         return False # Indicates that the function was not succesful
-    with open('Software SCHOOL/Stream 2/Hangman Stream 2/Word Lists/data.json','r') as word_file:
+    with open('Software SCHOOL/Stream 2/Hangman Stream 2/Word Lists/all_words_info.json','r') as word_file:
         word_file_info = json.load(word_file)
     difficulty_lengths = {}
     for difficulty in word_file_info["difficulties"].keys():
@@ -131,12 +197,48 @@ def write_new_words(new_word:str):
     if difficulty_of_word == None: # length of word is out of bounds --> break the function
         print("Enter a word with the correct length")
         return False
-    with open('Software SCHOOL/Stream 2/Hangman Stream 2/Word Lists/data.json','w') as overwrite_file:
+    with open('Software SCHOOL/Stream 2/Hangman Stream 2/Word Lists/all_words_info.json','w') as overwrite_file:
         json.dump(word_file_info, overwrite_file, indent=4) #overwrite the file with the updated word list
     print(f"\'{new_word}\' has been added into the {difficulty_of_word} list!\n")
     word_file_info = None
     return True # function is executed normally
 end_game = False
+print(f"""
+=============================================
+                HANGMAN GAME
+=============================================
+
+HOW TO PLAY:
+-----------
+* START: Type "start" or "s" to begin a new game
+* LOAD:  Type "load" or "l" to continue a saved game
+* UPDATE: Type "update" or "u" to add new words
+* QUIT:  Type "QUIT" or "q" to exit
+
+DIFFICULTY LEVELS:
+----------------
+Easy, Medium, or Hard - each with different word 
+lengths and starting points.
+
+GAMEPLAY RULES:
+-------------
+* Guess one letter at a time or the full word
+* CORRECT guess: +10 points
+* INCORRECT guess: -10 points
+* REPEATED guess: -10 points
+* Type "QUIT" during a game to exit
+
+WINNING & LOSING:
+---------------
+* WIN: Successfully guess the complete word
+* LOSE: Your points reach zero
+
+Games are automatically saved after each guess.
+Green letters = correct guesses, Red letters = incorrect
+
+Type "start", "load", "update", or "quit" to begin...
+======================================================
+""")
 while True:
     while True:
         game_state = input("Start a game, update word list, or load a new save file? ").lower()
@@ -150,8 +252,10 @@ while True:
                     if write_new_words(input("Add a new word (type QUIT to exit edit mode):  ")):
                         break
             elif game_state in ["load","l"]:
-                print("Loading a new save file")
-        elif game_state in ["quit","q"]:
+                print("Loading save file . . .")
+                currentGame=load_game_state()
+                break
+        elif game_state.lower() in ["quit","q"]:
             end_game = True
             break
     if end_game:
@@ -161,15 +265,19 @@ while True:
     print(currentGame.renderWord())
     while True:
         print(currentGame.processGuess(input("guess: ")))
+        save_game_state(currentGame)
         isEnd = currentGame.checkForEnd()
-        print(currentGame.renderWord())
         if isEnd[0] == True:
             if isEnd[1] == "W":
                 print(currentGame.formatting_tools.colors(f"You Won, the word was {currentGame.target_word}!  ", "green"))
             elif isEnd[1] == "L":
                 print(currentGame.formatting_tools.colors((f"You Lost, the word was {currentGame.target_word}! "),"red"))
+            elif isEnd[1] == "Q":
+                raise SystemExit
             # TODO: render the word at the very end
             break
+        print(currentGame.renderWord())
+    save_game_state(Hangman("","",set())) #reset the save file
     if input("Would you like to play again? (y/n) ").lower() in ["y","yes","t"]:
         print("Starting a new game! \n\n")
     else:
