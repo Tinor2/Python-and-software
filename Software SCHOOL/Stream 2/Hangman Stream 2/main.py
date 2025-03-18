@@ -188,7 +188,7 @@ def write_new_words(new_word:str):
     for difficulty, length_of_word in difficulty_lengths.items():
         if len(new_word) < length_of_word:
             difficulty_of_word = difficulty
-            if new_word in word_file_info['all_words'][difficulty]:
+            if new_word not in word_file_info['all_words'][difficulty]:
                 word_file_info['all_words'][difficulty].append(new_word)
             else:
                 print("Word entered already exists ")
@@ -213,7 +213,7 @@ HOW TO PLAY:
 * START: Type "start" or "s" to begin a new game
 * LOAD:  Type "load" or "l" to continue a saved game
 * UPDATE: Type "update" or "u" to add new words
-* QUIT:  Type "QUIT" or "q" to exit
+* QUIT:  Type "QUIT" to exit at any point
 
 DIFFICULTY LEVELS:
 ----------------
@@ -236,7 +236,7 @@ WINNING & LOSING:
 Games are automatically saved after each guess.
 Green letters = correct guesses, Red letters = incorrect
 
-Type "start", "load", "update", or "quit" to begin...
+Type "start", "load", "update" to begin...
 ======================================================
 """)
 while True:
