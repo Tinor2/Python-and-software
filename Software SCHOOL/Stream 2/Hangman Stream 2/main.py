@@ -118,7 +118,7 @@ def load_game_state():
         points = saved_data["points"]
 
         # Check if any essential data is missing
-        if points is '' or word is None:
+        if points == '' or word == None:
             print("save file is empty")
             blank_game = True
     else:
@@ -269,9 +269,9 @@ while True:
         isEnd = currentGame.checkForEnd()
         if isEnd[0] == True:
             if isEnd[1] == "W":
-                print(currentGame.formatting_tools.colors(f"You Won, the word was {currentGame.target_word}!  ", "green"))
+                print(currentGame.formatting_tools.colors(f"You Won, the word was {currentGame.target_word}! \nYou had a total of {currentGame.points}", "green"))
             elif isEnd[1] == "L":
-                print(currentGame.formatting_tools.colors((f"You Lost, the word was {currentGame.target_word}! "),"red"))
+                print(currentGame.formatting_tools.colors((f"You Lost, the word was {currentGame.target_word}! \nYou had a total of {currentGame.points}"),"red"))
             elif isEnd[1] == "Q":
                 raise SystemExit
             # TODO: render the word at the very end
