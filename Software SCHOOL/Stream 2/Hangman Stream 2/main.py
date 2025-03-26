@@ -199,7 +199,7 @@ def write_new_words(new_word:str):
     word_file_info = None
     return True # function is executed normally
 end_game = False
-def main_loop():
+def main_loop(current_game:Hangman):
         while True:
             print(current_game.process_guess(input("guess: ")))
             save_game_state(current_game)
@@ -216,10 +216,35 @@ def main_loop():
         save_game_state(Hangman("","",set())) #reset the save file
         if input("Would you like to play again? (y/n) ").lower() in ["y","yes","t"]:
             print("Starting a new game! \n\n")
+            return
         else:
             print("Thanks for playing! \nExiting Program.")
-            return
+            raise SystemExit
     
+def initialize_game():
+    while True:
+        game_state = input("Start a game, update word list, or load a new save file? ").lower()
+        if game_state in ["start","update","load","s","u","l"]:
+            if game_state in ['start','s']:
+                word, maxPoints = choose_dif()
+                current_game = Hangman(word, maxPoints)
+                break
+            elif game_state in ["update", "u"]:
+                while True:
+                    if write_new_words(input("Add a new word (type QUIT to exit edit mode):  ")):
+                        break
+            elif game_state in ["load","l"]:
+                print("Loading save file . . .")
+                current_game=load_game_state()
+                break
+        elif game_state.lower() in ["quit","q"]:
+            end_game = True
+            break
+    if end_game:
+        print("Exiting program.")
+        raise SystemExit
+    print(current_game.render_word())
+    return current_game
 print(f"""
 =============================================
                 HANGMAN GAME
@@ -257,28 +282,7 @@ Type "start", "load", "update" to begin...
 ======================================================
 """)
 while True:
-    while True:
-        game_state = input("Start a game, update word list, or load a new save file? ").lower()
-        if game_state in ["start","update","load","s","u","l"]:
-            if game_state in ['start','s']:
-                word, maxPoints = choose_dif()
-                current_game = Hangman(word, maxPoints)
-                break
-            elif game_state in ["update", "u"]:
-                while True:
-                    if write_new_words(input("Add a new word (type QUIT to exit edit mode):  ")):
-                        break
-            elif game_state in ["load","l"]:
-                print("Loading save file . . .")
-                current_game=load_game_state()
-                break
-        elif game_state.lower() in ["quit","q"]:
-            end_game = True
-            break
-    if end_game:
-        print("Exiting program.")
-        break
+    current_game = initialize_game()
     # This point is ONLY reached if the user has chosen to start a new game, or loaded a new one
-    print(current_game.render_word())
-    main_loop()
+    main_loop(current_game)
     
