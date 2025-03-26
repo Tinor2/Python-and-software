@@ -11,7 +11,7 @@ class Hangman:
         self.used_guesses = guesses
         self.points = total_points
         self.formatting_tools = utils.Formatting()
-    def checkForEnd(self): #uses self.word, self.guesses, self.points
+    def check_for_end(self): #uses self.word, self.guesses, self.points
         # print(f"word: {sorted(set(self.word))}, guesses used: {sorted(self.guesses)}")
         if self.user_end:
             return True, "Q"
@@ -21,8 +21,11 @@ class Hangman:
             return True,"W"
         else:
             return False,"-"
-    def processGuess(self, guess:str): #uses guess, self.guesses, self.word, self.points
-        if len(guess) == 1:
+    def process_guess(self, guess:str): #uses guess, self.guesses, self.word, self.points
+        if guess == "QUIT":
+            self.user_end = True
+            return "Exiting game"
+        elif len(guess) == 1:
             if guess in self.used_guesses: # is a in {...}
                 self.used_guesses.add(guess) 
                 self.points -= 10
@@ -38,10 +41,6 @@ class Hangman:
                 self.points += 10
                 print(f"Total points: {self.points}")
                 return "Correct Choice, gain 10 points!"
-        elif guess == "QUIT":
-            self.user_end = True
-            return "Exiting game"
-
         else:
             if self.target_word == guess:
                 for letter in guess: self.used_guesses.add(letter)
@@ -51,7 +50,7 @@ class Hangman:
                 self.points -= 10
                 print(f"Total lives left: {self.points}")
                 return "Wrong choice, loose 10 points"
-    def renderWord(self): # uses self.word, self.guesses
+    def render_word(self): # uses self.word, self.guesses
         display = ""
         for char in self.target_word: # could be simplified to collection
             if char in self.used_guesses:
@@ -110,27 +109,23 @@ def use_data(filename:str,relative_path:str|None = None,state:str|None = None,da
 def load_game_state():
     saved_data = use_data("save_file.json")
     blank_game = False
-    
     if saved_data:
         # Convert guesses to a set if it exists, otherwise create empty set
         guesses = set(saved_data["guesses"]) if saved_data.get("guesses") else set()
         word =str(saved_data["word"])
         points = saved_data["points"]
-
         # Check if any essential data is missing
-        if points is '' or word is None:
+        if points == '' or word == None:
             print("save file is empty")
             blank_game = True
     else:
         print("save file can not be found, creating new save file")
         use_data("save_file.json", state="x",data = {"word": "", "points": 0, "guesses": []})
         blank_game = True
-
     if blank_game:
         print("Starting new game")    
-        word, points = chooseDif()
+        word, points = choose_dif()
         guesses = set()
-    
     return Hangman(word, int(points), guesses)
 def save_game_state(game:Hangman):
     save_data = {
@@ -140,7 +135,7 @@ def save_game_state(game:Hangman):
     }
     use_data("save_file.json", state="w", data=save_data)
 
-def chooseDif(): # uses loaded data
+def choose_dif(): # uses loaded data
     game_data= use_data("all_words_info.json")
     if game_data == None:
         print("Exiting program")
@@ -173,8 +168,10 @@ def write_new_words(new_word:str):
     if new_word == None or not new_word.isalpha(): # If the input had symbols/digits, or if it was just nothing, then break the function
         print("Enter a valid value")
         return False # Indicates that the function was not succesful
-    with open('Software SCHOOL/Stream 2/Hangman Stream 2/Word Lists/all_words_info.json','r') as word_file:
-        word_file_info = json.load(word_file)
+    word_file_info = use_data("all_words_info.json")
+    if word_file_info == None:
+        print("Exiting program")
+        raise SystemExit
     difficulty_lengths = {}
     for difficulty in word_file_info["difficulties"].keys():
         difficulty_lengths[difficulty] = word_file_info["difficulties"][difficulty]['word_length'][1] 
@@ -197,12 +194,32 @@ def write_new_words(new_word:str):
     if difficulty_of_word == None: # length of word is out of bounds --> break the function
         print("Enter a word with the correct length")
         return False
-    with open('Software SCHOOL/Stream 2/Hangman Stream 2/Word Lists/all_words_info.json','w') as overwrite_file:
-        json.dump(word_file_info, overwrite_file, indent=4) #overwrite the file with the updated word list
+    use_data("all_words_info.json", state="w", data=word_file_info)
     print(f"\'{new_word}\' has been added into the {difficulty_of_word} list!\n")
     word_file_info = None
     return True # function is executed normally
 end_game = False
+def main_loop():
+        while True:
+            print(current_game.process_guess(input("guess: ")))
+            save_game_state(current_game)
+            is_end = current_game.check_for_end()
+            if is_end[0] == True:
+                if is_end[1] == "W":
+                    print(current_game.formatting_tools.colors(f"You Won, the word was {current_game.target_word}! \nYou had a total of {current_game.points}", "green"))
+                elif is_end[1] == "L":
+                    print(current_game.formatting_tools.colors((f"You Lost, the word was {current_game.target_word}! \nYou had a total of {current_game.points}"),"red"))
+                elif is_end[1] == "Q":
+                    raise SystemExit
+                break
+            print(current_game.render_word())
+        save_game_state(Hangman("","",set())) #reset the save file
+        if input("Would you like to play again? (y/n) ").lower() in ["y","yes","t"]:
+            print("Starting a new game! \n\n")
+        else:
+            print("Thanks for playing! \nExiting Program.")
+            return
+    
 print(f"""
 =============================================
                 HANGMAN GAME
@@ -244,8 +261,8 @@ while True:
         game_state = input("Start a game, update word list, or load a new save file? ").lower()
         if game_state in ["start","update","load","s","u","l"]:
             if game_state in ['start','s']:
-                word, maxPoints = chooseDif()
-                currentGame = Hangman(word, maxPoints)
+                word, maxPoints = choose_dif()
+                current_game = Hangman(word, maxPoints)
                 break
             elif game_state in ["update", "u"]:
                 while True:
@@ -253,7 +270,7 @@ while True:
                         break
             elif game_state in ["load","l"]:
                 print("Loading save file . . .")
-                currentGame=load_game_state()
+                current_game=load_game_state()
                 break
         elif game_state.lower() in ["quit","q"]:
             end_game = True
@@ -262,24 +279,6 @@ while True:
         print("Exiting program.")
         break
     # This point is ONLY reached if the user has chosen to start a new game, or loaded a new one
-    print(currentGame.renderWord())
-    while True:
-        print(currentGame.processGuess(input("guess: ")))
-        save_game_state(currentGame)
-        isEnd = currentGame.checkForEnd()
-        if isEnd[0] == True:
-            if isEnd[1] == "W":
-                print(currentGame.formatting_tools.colors(f"You Won, the word was {currentGame.target_word}!  ", "green"))
-            elif isEnd[1] == "L":
-                print(currentGame.formatting_tools.colors((f"You Lost, the word was {currentGame.target_word}! "),"red"))
-            elif isEnd[1] == "Q":
-                raise SystemExit
-            # TODO: render the word at the very end
-            break
-        print(currentGame.renderWord())
-    save_game_state(Hangman("","",set())) #reset the save file
-    if input("Would you like to play again? (y/n) ").lower() in ["y","yes","t"]:
-        print("Starting a new game! \n\n")
-    else:
-        print("Thanks for playing! \nExiting Program.")
-        break
+    print(current_game.render_word())
+    main_loop()
+    
