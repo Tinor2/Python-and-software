@@ -1,48 +1,49 @@
-import json
-import utils
+import json # Used for save files and word lists
+import utils # Only used for adding colour
 import random
 from os import path
-class Hangman:
-    def __init__(self, word:str, total_points, guesses = None) -> None:
-        if guesses == None:
-            guesses = set()
-        self.user_end = False
-        self.target_word = word
-        self.used_guesses = guesses
+class Hangman: # Contains all functions, and infomration for any game that is running, specifically for gameplay
+    def __init__(self, target_word:str, total_points, used_guesses = None) -> None:
+        #Set up:
+        # Empty set to store all used guesses
+        if used_guesses == None:
+            used_guesses = set()
+        self.user_end = False # Flag to see if the game should be terminated
+        self.target_word = target_word
+        self.used_guesses = used_guesses
         self.points = total_points
         self.formatting_tools = utils.Formatting()
     def check_for_end(self): #uses self.word, self.guesses, self.points
-        # print(f"word: {sorted(set(self.word))}, guesses used: {sorted(self.guesses)}")
         if self.user_end:
-            return True, "Q"
+            return True, "Q" # The game will end, with a user quit
         elif self.points <= 0:
-            return True, "L" #loss
+            return True, "L" #The game will end, with a loss
         elif  set(sorted(self.target_word)) <= set(sorted(self.used_guesses)): #note: Not scalable
-            return True,"W"
+            return True,"W" #The game will end, with a win
         else:
-            return False,"-"
-    def process_guess(self, guess:str): #uses guess, self.guesses, self.word, self.points
+            return False,"-" #The game will continue
+    def process_guess(self, guess:str):
         if guess == "QUIT":
             self.user_end = True
             return "Exiting game"
         elif len(guess) == 1:
-            if guess in self.used_guesses: # is a in {...}
+            if guess in self.used_guesses: #loose points if guess has already been used
                 self.used_guesses.add(guess) 
-                self.points -= 10
+                self.points -= 10 
                 print(f"Total points: {self.points}")
                 return "Already used letter, loose 10 points"
-            elif guess not in self.target_word:
+            elif guess not in self.target_word: #loose points if guess is incorrect
                 self.used_guesses.add(guess) 
                 self.points -= 10
                 print(f"Total points: {self.points}")
                 return "Wrong choice, loose 10 points"    
-            else:
+            else: #gain points if guess nothing is wrong with it
                 self.used_guesses.add(guess)
                 self.points += 10
                 print(f"Total points: {self.points}")
                 return "Correct Choice, gain 10 points!"
-        else:
-            if self.target_word == guess:
+        else: # handles for entire word guesses
+            if self.target_word == guess: 
                 for letter in guess: self.used_guesses.add(letter)
                 self.points += 10
                 return "Correct Choice, gain 10 points!"
@@ -50,9 +51,9 @@ class Hangman:
                 self.points -= 10
                 print(f"Total lives left: {self.points}")
                 return "Wrong choice, loose 10 points"
-    def render_word(self): # uses self.word, self.guesses
+    def render_word(self): 
         display = ""
-        for char in self.target_word: # could be simplified to collection
+        for char in self.target_word: # Displays the target word, replacing un-guessed letters with blanks
             if char in self.used_guesses:
                 display += f" {char} "
             else:
@@ -60,14 +61,14 @@ class Hangman:
         display = self.formatting_tools.colors(display,"green")
         display += self.formatting_tools.colors("\nletters guessed: ","cyan")
 
-        for used_letter in sorted(self.used_guesses):
+        for used_letter in sorted(self.used_guesses): # Display all used guesses, color coding incorrect and correct guesses
             if used_letter in self.target_word:
                 display += self.formatting_tools.colors(used_letter,"cyan")
             else:
-                display += self.formatting_tools.colors(used_letter,"red") #sort guesses taken alpahbetically, convert into a string. Also render it in a different color
+                display += self.formatting_tools.colors(used_letter,"red") 
             display += " "       
         return display
-#Software SCHOOL/Stream 2/Hangman Stream 2/all_words_info.json
+
 def use_data(filename:str,relative_path:str|None = None,state:str|None = None,data = None): #loads and acceses database
     """
     Loads and accesses JSON database files with specified access mode.
@@ -108,17 +109,16 @@ def use_data(filename:str,relative_path:str|None = None,state:str|None = None,da
 
 def load_game_state():
     saved_data = use_data("save_file.json")
-    blank_game = False
-    if saved_data:
+    blank_game = False # If we ever need to start a brand new game
+    if saved_data: # Stores all data from save file
         # Convert guesses to a set if it exists, otherwise create empty set
         guesses = set(saved_data["guesses"]) if saved_data.get("guesses") else set()
         word =str(saved_data["word"])
         points = saved_data["points"]
-        # Check if any essential data is missing
         if points == '' or word == None:
-            print("save file is empty")
+            print("save file is empty") # if any data is missing, start blank game
             blank_game = True
-    else:
+    else: # Create a new save_file if it cant be found in the same dir as main.py
         print("save file can not be found, creating new save file")
         use_data("save_file.json", state="x",data = {"word": "", "points": 0, "guesses": []})
         blank_game = True
