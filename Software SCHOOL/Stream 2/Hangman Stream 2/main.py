@@ -122,13 +122,13 @@ def load_game_state():
         print("save file can not be found, creating new save file")
         use_data("save_file.json", state="x",data = {"word": "", "points": 0, "guesses": []})
         blank_game = True
-    if blank_game:
+    if blank_game: # completely brand new information for a new game
         print("Starting new game")    
-        word, points = choose_dif()
+        word, points = choose_dif() 
         guesses = set()
-    return Hangman(word, int(points), guesses)
+    return Hangman(word, int(points), guesses) # return the desired instance of the hangman class
 def save_game_state(game:Hangman):
-    save_data = {
+    save_data = { # template for save state
         "word": game.target_word,
         "points": game.points,
         "guesses": list(game.used_guesses)
@@ -147,7 +147,7 @@ def choose_dif(): # uses loaded data
         options.extend(difficulty["shortcuts"])
     while True:
         user_choosen_difficulty = input("Choose a difficulty: ").lower()
-        if user_choosen_difficulty in options:
+        if user_choosen_difficulty in options: 
             if user_choosen_difficulty in difficulty_info["easy"]["shortcuts"]:
                 final_difficulty = "easy"
             elif user_choosen_difficulty in difficulty_info["medium"]["shortcuts"]:
@@ -169,7 +169,7 @@ def write_new_words(new_word:str):
         print("Enter a valid value")
         return False # Indicates that the function was not succesful
     word_file_info = use_data("all_words_info.json")
-    if word_file_info == None:
+    if word_file_info == None: # If 
         print("Exiting program")
         raise SystemExit
     difficulty_lengths = {}
@@ -201,7 +201,8 @@ def write_new_words(new_word:str):
 end_game = False
 def main_loop(current_game:Hangman):
         while True:
-            print(current_game.process_guess(input("guess: ")))
+            # Take a guess, save the game, check it needs to be ended, render the UI at the end, repeat. Check for quits throughout
+            print(current_game.process_guess(input("guess: "))) 
             save_game_state(current_game)
             is_end = current_game.check_for_end()
             if is_end[0] == True:
@@ -213,9 +214,10 @@ def main_loop(current_game:Hangman):
                     raise SystemExit
                 break
             print(current_game.render_word())
-        save_game_state(Hangman("","",set())) #reset the save file
+        #Game is finished, (check_for_end()[0] == True)
+        save_game_state(Hangman("","",set())) #reset the save file 
         if input("Would you like to play again? (y/n) ").lower() in ["y","yes","t"]:
-            print("Starting a new game! \n\n")
+            print("Starting a new game! \n\n") 
             return
         else:
             print("Thanks for playing! \nExiting Program.")
@@ -223,28 +225,31 @@ def main_loop(current_game:Hangman):
     
 def initialize_game():
     while True:
-        game_state = input("Start a game, update word list, or load a new save file? ").lower()
+        game_state = input("Start a game, update word list, or load a new save file? ").lower().strip() # make sure the input is completely valid
         if game_state in ["start","update","load","s","u","l"]:
-            if game_state in ['start','s']:
-                word, maxPoints = choose_dif()
+            if game_state in ['start','s']: 
+                word, maxPoints = choose_dif() # start a new game, completely normally
                 current_game = Hangman(word, maxPoints)
-                break
-            elif game_state in ["update", "u"]:
+                break # any time break is called, the main_loop function starts.
+            elif game_state in ["update", "u"]: # write new words
                 while True:
                     if write_new_words(input("Add a new word (type QUIT to exit edit mode):  ")):
-                        break
-            elif game_state in ["load","l"]:
+                        break #here however, this just breaks out of the edit mode, the game is still within the loop in the init_game 
+            elif game_state in ["load","l"]: # load an existing game file
                 print("Loading save file . . .")
                 current_game=load_game_state()
                 break
         elif game_state.lower() in ["quit","q"]:
             end_game = True
             break
+        else:
+            print("Invalid input, try again. ")
     if end_game:
         print("Exiting program.")
         raise SystemExit
     print(current_game.render_word())
     return current_game
+# Intro card
 print(f"""
 =============================================
                 HANGMAN GAME
@@ -281,7 +286,7 @@ Green letters = correct guesses, Red letters = incorrect
 Type "start", "load", "update" to begin...
 ======================================================
 """)
-while True:
+while True: # main gameplay loop
     current_game = initialize_game()
     # This point is ONLY reached if the user has chosen to start a new game, or loaded a new one
     main_loop(current_game)
