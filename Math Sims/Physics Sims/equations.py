@@ -1,7 +1,9 @@
-
+import math
 def gravitational_attraction(m1, m2, r):
     G = 6.67430e-11  # gravitational constant in m^3 kg^-1 s^-2
     return G * m1 * m2 / r**2
+def find_dist(pair_of_points):
+    return math.sqrt(pair_of_points[0]**2+pair_of_points[1]**2)
 def suvat(target:str,
         
           s:float|None = None, 
@@ -107,6 +109,7 @@ def suvat(target:str,
                 local_vars[element] = v
         result = eval(target_equation, {"__builtins__": {}}, local_vars)
         return result
+
 if __name__ == "__main__":
     # Example usage:
     # A car starts from a stop light, how far has it travelled when it reaches 10 m/s, accelerating at 10 m/s^2?
