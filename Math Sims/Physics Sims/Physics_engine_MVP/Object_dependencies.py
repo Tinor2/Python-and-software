@@ -2,7 +2,6 @@ from enum import Enum
 from math import sqrt
 from constants import Shape, Color, TOTAL_LAYERS
 
-
 class Renderer:
     def __init__(self, parent, shape, dimensions):
         self.parent = parent
@@ -35,13 +34,16 @@ class Renderer:
             if len(self.dimensions) != 1:   
                 raise ValueError("Circle shape requires 1 parameter for dimensions.")
             radius = self.dimensions[0]
-            circle = [[0]*int(radius*2)]*int(radius*2)
+            # Create fresh lists for each row instead of references
+            circle = []
             for i in range(int(radius*2)):
+                row = [0] * int(radius*2)  # Create new row for each iteration
                 for j in range(int(radius*2)):
                     if (i - radius)**2 + (j - radius)**2 <= radius**2:
-                        circle[i][j] = render_result["color"]
+                        row[j] = render_result["color"]
                     else:
-                        circle[i][j] = 0
+                        row[j] = 0
+                circle.append(row)
             render_result["result"] = circle
         return render_result
     def __str__(self):
